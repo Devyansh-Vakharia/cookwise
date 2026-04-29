@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CookWise App</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+/* ── Theme variables ── */
+[data-theme="dark"]{
+  --bg:#0F0D0A;--s1:#1A1612;--s2:#241F18;--s3:#2E2820;
+  --text:#EDE8DF;--muted:#9A9080;--border:rgba(245,166,35,.15);
+  --card-shadow:0 2px 20px rgba(0,0,0,.4);
+  --input-bg:#241F18;
+}
+[data-theme="light"]{
+  --bg:#FBF7F0;--s1:#FFFFFF;--s2:#F5ECD8;--s3:#EDE0C4;
+  --text:#2D2418;--muted:#8A7460;--border:rgba(180,100,0,.2);
+  --card-shadow:0 2px 20px rgba(0,0,0,.08);
+  --input-bg:#FFFFFF;
+}
+:root{
+  --amber:#F5A623;--amber-d:#C87A0D;--amber-glow:rgba(245,166,35,.12);
+  --green:#4CAF50;--red:#F44336;--orange:#FF9800;--blue:#2196F3;--purple:#9C27B0;
+  --r:14px;
+}
+
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
+
+/* ── Layout ── */
+.layout{display:grid;grid-template-columns:400px 1fr;min-height:100vh}
+@media(max-width:960px){.layout{grid-template-columns:1fr}}
+
+/* ── Sidebar ── */
+.sidebar{background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;transition:background .3s}
+.sb-head{padding:20px 22px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:700;color:var(--amber);text-decoration:none}
+.logo span{color:var(--text);transition:color .3s}
+.head-right{display:flex;align-items:center;gap:12px}
+.back{font-size:.8rem;color:var(--muted);text-decoration:none}
+.back:hover{color:var(--amber)}
+
+/* ── Day/Night Toggle ── */
+.theme-btn{background:var(--s2);border:1px solid var(--border);color:var(--text);width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.theme-btn:hover{border-color:var(--amber);transform:rotate(20deg)}
+
+/* ── Language selector ── */
+.lang-select{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:8px;font-size:.78rem;font-family:inherit;outline:none;cursor:pointer}
+.lang-select:focus{border-color:var(--amber)}
+
+.sb-body{padding:18px 20px;flex:1;display:flex;flex-direction:column;gap:18px}
+.lbl{font-size:.7rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);display:block;margin-bottom:7px}
+
+/* ── Autocomplete ingredient input ── */
+.ing-wrap{position:relative}
+.ing-row{display:flex;gap:7px}
+.ing-inp{flex:1;background:var(--input-bg);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-family:inherit;font-size:.9rem;outline:none;transition:border .2s}
+.ing-inp:focus{border-color:var(--amber)}
+.ing-inp::placeholder{color:var(--muted)}
+.btn-add{background:var(--amber);color:#0F0D0A;border:none;padding:11px 14px;border-radius:10px;cursor:pointer;font-size:1.1rem;font-weight:700;transition:all .2s;flex-shrink:0}
+.btn-add:hover{background:var(--amber-d)}
+.btn-voice{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:11px 13px;border-radius:10px;cursor:pointer;font-size:1.1rem;flex-shrink:0;transition:all .2s}
+.btn-voice.on{background:var(--red);border-color:var(--red)}
+
+/* Autocomplete dropdown */
+.autocomplete-list{position:absolute;top:100%;left:0;right:0;background:var(--s1);border:1px solid var(--amber);border-top:none;border-radius:0 0 10px 10px;z-index:100;max-height:200px;overflow-y:auto;box-shadow:var(--card-shadow)}
+.ac-item{padding:10px 14px;cursor:pointer;font-size:.88rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);transition:background .15s}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover{background:var(--amber-glow)}
+.ac-emoji{font-size:1.1rem;flex-shrink:0}
+.ac-name{font-weight:500}
+.ac-hint{font-size:.75rem;color:var(--muted)}
+
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);padding:5px 11px;border-radius:999px;font-size:.83rem;transition:background .2s}
+.chip-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;line-height:1;padding:0}
+.chip-x:hover{color:var(--red)}
+
+/* Surprise Me */
+.btn-surprise{width:100%;background:linear-gradient(135deg,#6B21A8,#9333EA);color:#fff;border:none;padding:10px;border-radius:10px;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-surprise:hover{transform:translateY(-1px);box-shadow:0 8px 24px rgba(147,51,234,.35)}
+.btn-surprise:disabled{opacity:.6;transform:none}
+
+/* Chef Personas */
+.personas{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.persona-btn{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:9px 6px;border-radius:10px;cursor:pointer;font-size:.8rem;text-align:center;transition:all .2s;font-family:inherit;line-height:1.3}
+.persona-btn:hover{border-color:var(--amber)}
+.persona-btn.active{background:var(--amber-glow);border-color:var(--amber);color:var(--amber)}
+.p-icon{font-size:1.3rem;display:block;margin-bottom:3px}
+
+/* Cuisine selector */
+.cuisine-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}
+.cuisine-btn{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:8px 6px;border-radius:10px;cursor:pointer;font-size:.8rem;text-align:center;transition:all .2s;font-family:inherit;line-height:1.3}
+.cuisine-btn:hover{border-color:var(--amber)}
+.cuisine-btn.active{background:var(--amber-glow);border-color:var(--amber);color:var(--amber)}
+.c-icon{font-size:1.1rem;display:block;margin-bottom:2px}
+
+/* Inputs */
+select,.num-in{width:100%;background:var(--input-bg);border:1px solid var(--border);color:var(--text);padding:11px 14px;border-radius:10px;font-family:inherit;font-size:.9rem;outline:none;transition:border .2s;appearance:none}
+select:focus,.num-in:focus{border-color:var(--amber)}
+.budget-wrap{position:relative}
+.budget-pfx{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--amber);font-weight:600;pointer-events:none}
+.budget-in{padding-left:28px}
+.srv-row{display:flex;align-items:center;gap:12px}
+.btn-c{background:var(--s2);border:1px solid var(--border);color:var(--text);width:34px;height:34px;border-radius:8px;cursor:pointer;font-size:1.1rem;transition:all .2s;font-family:inherit}
+.btn-c:hover{border-color:var(--amber);color:var(--amber)}
+.srv-n{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--amber);min-width:26px;text-align:center}
+
+/* Toggles */
+.tog-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.tog-lbl{font-size:.86rem;display:flex;align-items:center;gap:7px}
+.tog{position:relative;width:44px;height:24px;cursor:pointer}
+.tog input{opacity:0;width:0;height:0}
+.tog-s{position:absolute;inset:0;background:var(--s3);border-radius:999px;transition:.3s}
+.tog-s::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:.3s}
+.tog input:checked+.tog-s{background:var(--amber)}
+.tog input:checked+.tog-s::before{transform:translateX(20px);background:#0F0D0A}
+
+/* Buttons */
+.btn-gen{width:100%;background:var(--amber);color:#0F0D0A;border:none;padding:17px;border-radius:var(--r);font-size:1rem;font-weight:700;cursor:pointer;transition:all .25s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn-gen:hover{background:var(--amber-d);transform:translateY(-2px);box-shadow:0 12px 40px rgba(245,166,35,.3)}
+.btn-gen:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-sec{width:100%;background:var(--s2);border:1px solid var(--border);color:var(--text);padding:13px;border-radius:var(--r);font-size:.88rem;font-weight:500;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px}
+.btn-sec:hover{border-color:var(--amber);color:var(--amber)}
+.sb-foot{padding:14px 20px 18px;border-top:1px solid var(--border)}
+
+/* ── Main ── */
+.main{padding:32px;overflow-y:auto;transition:background .3s}
+@media(max-width:600px){.main{padding:18px}}
+
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:75vh;text-align:center;color:var(--muted);gap:16px}
+.empty-icon{font-size:5rem;opacity:.25}
+.empty h2{font-family:'Cormorant Garamond',serif;font-size:2rem;color:var(--text)}
+.empty p{font-size:.95rem;max-width:360px;line-height:1.65}
+
+/* Loading */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:75vh;gap:20px;text-align:center}
+.cook-spin{font-size:4rem;animation:wobble 1s ease infinite}
+@keyframes wobble{0%,100%{transform:rotate(-8deg)}50%{transform:rotate(8deg)}}
+.ls{font-size:.88rem;color:var(--muted);display:flex;align-items:center;gap:10px;transition:color .3s}
+.ls.act{color:var(--amber)}.ls.done{color:var(--green)}
+.ls.act::before{content:'⟳';animation:spin .8s linear infinite;display:inline-block}
+.ls.done::before{content:'✓'}.ls:not(.act):not(.done)::before{content:'○'}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Cards */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px;box-shadow:var(--card-shadow);transition:background .3s,border .3s}
+.ch{padding:15px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.ct{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.cb{padding:20px}
+
+/* Recipe header */
+.rname{font-family:'Cormorant Garamond',serif;font-size:2.6rem;font-weight:700;line-height:1.1;margin-bottom:6px}
+.rtagline{font-style:italic;color:var(--muted);font-size:1rem;margin-bottom:14px}
+.rmeta{display:flex;gap:9px;flex-wrap:wrap}
+.badge{display:inline-flex;align-items:center;gap:5px;background:var(--s2);border:1px solid var(--border);padding:5px 12px;border-radius:999px;font-size:.8rem}
+
+/* CookWise Score */
+.cw-bar{display:flex;align-items:center;gap:18px;padding:18px 22px;background:linear-gradient(135deg,var(--s2),var(--s3));border-bottom:1px solid var(--border)}
+.cw-ring{position:relative;width:68px;height:68px;flex-shrink:0}
+.cw-ring svg{transform:rotate(-90deg)}
+.cw-ring-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:700;color:var(--amber)}
+.cw-info{flex:1}
+.cw-title{font-weight:600;font-size:.95rem;margin-bottom:3px}
+.cw-sub{font-size:.8rem;color:var(--muted)}
+.cw-pills{display:flex;gap:10px;margin-top:7px;flex-wrap:wrap}
+.pill{font-size:.72rem;padding:3px 9px;border-radius:999px;font-weight:500}
+.pill.taste{background:rgba(245,166,35,.15);color:var(--amber)}
+.pill.health{background:rgba(76,175,80,.15);color:var(--green)}
+.pill.budget{background:rgba(33,150,243,.15);color:var(--blue)}
+.btn-share{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:9px 16px;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:500;transition:all .2s;font-family:inherit;flex-shrink:0}
+.btn-share:hover{border-color:var(--amber);color:var(--amber)}
+
+/* Taste */
+.taste-main{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px;margin-bottom:20px}
+.taste-big{font-family:'Cormorant Garamond',serif;font-size:4.5rem;font-weight:700;line-height:1}
+.taste-lbl{font-size:1.1rem;font-weight:600;margin-top:4px}
+.bars{flex:1;min-width:200px}
+.bar-r{margin-bottom:11px}
+.bar-lbl{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:4px}
+.bar-t{height:7px;background:var(--s2);border-radius:999px;overflow:hidden}
+.bar-f{height:100%;border-radius:999px;transition:width 1.2s cubic-bezier(.4,0,.2,1);width:0}
+.bf-g{background:linear-gradient(90deg,#4CAF50,#8BC34A)}
+.bf-o{background:linear-gradient(90deg,#FF9800,#FFC107)}
+.bf-r{background:linear-gradient(90deg,#F44336,#FF5722)}
+.reasons{list-style:none;display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.reasons li{font-size:.87rem;color:var(--muted)}
+.regret-box{padding:14px 16px;background:var(--amber-glow);border:1px solid var(--border);border-radius:10px;display:flex;align-items:flex-start;gap:12px}
+.regret-t{font-weight:600;margin-bottom:2px;font-size:.95rem}
+.regret-d{font-size:.82rem;color:var(--muted)}
+
+/* Two col */
+.two-col{display:grid;grid-template-columns:1fr 1.5fr;gap:20px}
+@media(max-width:700px){.two-col{grid-template-columns:1fr}}
+
+/* Ingredients */
+.ing-g{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.ing-item{background:var(--s2);border:1px solid var(--border);padding:11px 12px;border-radius:10px;font-size:.84rem}
+.ing-item.miss{border-color:var(--orange)}
+.ing-name{font-weight:500}.ing-qty{font-size:.76rem;color:var(--amber);margin-top:2px}
+.ing-prep{font-size:.72rem;color:var(--muted)}
+
+/* Masala */
+.masala-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:8px}
+.masala-item{background:linear-gradient(135deg,rgba(245,166,35,.07),var(--s2));border:1px solid rgba(245,166,35,.2);padding:11px 13px;border-radius:10px}
+.masala-name{font-weight:600;font-size:.86rem;color:var(--amber)}
+.masala-qty{font-size:.8rem;color:var(--text);margin-top:2px}
+.masala-why{font-size:.72rem;color:var(--muted);margin-top:2px;font-style:italic}
+
+/* Cook mode steps */
+.cook-bar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--s2);border-bottom:1px solid var(--border)}
+.timer-disp{font-family:'Cormorant Garamond',serif;font-size:1.7rem;font-weight:700;color:var(--amber)}
+.btn-timer{background:var(--amber);color:#0F0D0A;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:700;transition:all .2s;font-family:inherit}
+.btn-timer:hover{background:var(--amber-d)}.btn-timer.stop{background:var(--red);color:#fff}
+.steps-list{list-style:none;display:flex;flex-direction:column}
+.step-item{display:flex;gap:0;cursor:pointer;border-radius:10px;transition:background .2s;padding:3px}
+.step-item:hover{background:var(--s2)}
+.step-item.act-s{background:var(--amber-glow);border:1px solid var(--border)}
+.step-item.done-s .step-num{background:var(--green);color:#fff;border-color:var(--green)}
+.step-left{display:flex;flex-direction:column;align-items:center;padding:11px 14px 11px 10px}
+.step-num{width:34px;height:34px;border-radius:50%;background:var(--s2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1rem;font-weight:700;color:var(--amber);flex-shrink:0;transition:all .2s}
+.step-item.act-s .step-num{background:var(--amber);color:#0F0D0A;border-color:var(--amber)}
+.step-line{width:2px;flex:1;background:var(--border);margin:5px 0;min-height:18px}
+.step-right{padding:11px 10px 11px 0;flex:1}
+.step-stitle{font-weight:600;font-size:.9rem;margin-bottom:3px}
+.step-txt{font-size:.88rem;line-height:1.65;color:var(--muted)}
+.step-item.act-s .step-txt{color:var(--text)}
+.step-time{font-size:.76rem;color:var(--amber);margin-top:5px}
+.step-tip{font-size:.76rem;color:#8BC34A;background:rgba(139,195,74,.08);padding:3px 9px;border-radius:6px;margin-top:5px;display:inline-block}
+.step-warn{font-size:.76rem;color:var(--orange);background:rgba(255,152,0,.08);padding:3px 9px;border-radius:6px;margin-top:3px;display:inline-block}
+
+/* Health */
+.health-top{display:flex;align-items:center;gap:18px;margin-bottom:18px;flex-wrap:wrap}
+.h-ring{width:78px;height:78px;position:relative;flex-shrink:0}
+.h-ring svg{transform:rotate(-90deg)}
+.h-ring-txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--amber)}
+.macros{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+@media(max-width:600px){.macros{grid-template-columns:repeat(2,1fr)}}
+.macro{background:var(--s2);border-radius:10px;padding:12px;text-align:center}
+.macro-v{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--amber)}
+.macro-n{font-size:.72rem;color:var(--muted);margin-top:2px}
+.hw{padding:9px 13px;background:rgba(244,67,54,.07);border:1px solid rgba(244,67,54,.2);border-radius:8px;font-size:.85rem;margin-bottom:6px}
+.hp{padding:9px 13px;background:rgba(76,175,80,.07);border:1px solid rgba(76,175,80,.2);border-radius:8px;font-size:.85rem;margin-bottom:6px}
+.burn-box{margin-top:10px;padding:11px 15px;background:var(--s2);border-radius:10px;font-size:.83rem;color:var(--muted)}
+.burn-box span{color:var(--amber);font-weight:600}
+
+/* Budget */
+.bv{font-size:.95rem;font-weight:500;margin-bottom:14px;padding:12px 15px;background:var(--s2);border-radius:10px}
+.b-item{display:flex;align-items:flex-start;justify-content:space-between;padding:10px 14px;background:var(--s2);border-radius:10px;font-size:.86rem;margin-bottom:7px;gap:12px}
+.b-cost{font-weight:600;color:var(--amber);white-space:nowrap}
+.b-alt{font-size:.78rem;color:var(--muted);padding:7px 12px;border-left:2px solid var(--amber);margin-bottom:7px;background:rgba(245,166,35,.05);border-radius:0 6px 6px 0}
+.savings-tip{font-size:.8rem;color:var(--muted);padding:8px 11px;background:var(--s2);border-left:3px solid var(--amber);border-radius:0 8px 8px 0;margin-bottom:6px}
+
+/* Plating */
+.pairs-list{display:flex;flex-wrap:wrap;gap:8px}
+.pair-tag{background:var(--s2);border:1px solid var(--border);padding:6px 13px;border-radius:999px;font-size:.83rem}
+.storage-box{background:var(--s2);border-radius:10px;padding:13px 15px;font-size:.88rem;color:var(--muted);line-height:1.6}
+.plating-box{background:linear-gradient(135deg,rgba(245,166,35,.07),var(--s2));border:1px solid rgba(245,166,35,.15);border-radius:10px;padding:13px 15px;font-size:.88rem;line-height:1.65;margin-bottom:14px}
+
+/* Roast */
+.roast-card{background:linear-gradient(135deg,rgba(255,107,53,.1),rgba(245,166,35,.06));border:1px solid rgba(255,107,53,.25)}
+.roast-txt{font-size:1rem;line-height:1.75;font-style:italic}
+
+/* Chef note */
+.chef-note{background:linear-gradient(135deg,var(--s2),var(--s3));border-left:3px solid var(--amber);padding:15px 18px;border-radius:0 10px 10px 0;font-size:.9rem;line-height:1.65;font-style:italic}
+
+/* Tips */
+.tips-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.tips-list li{font-size:.88rem;color:var(--muted);display:flex;gap:9px}
+.tips-list li::before{content:'💡';flex-shrink:0}
+
+/* Expiry */
+.exp-banner{background:rgba(255,152,0,.1);border:1px solid rgba(255,152,0,.3);border-radius:10px;padding:13px 16px;font-size:.88rem;margin-bottom:16px}
+
+/* Error */
+.err-box{background:rgba(244,67,54,.07);border:1px solid rgba(244,67,54,.2);border-radius:var(--r);padding:28px;text-align:center}
+.err-box h3{color:var(--red);margin-bottom:8px}
+
+/* Confetti */
+.confetti-piece{position:fixed;width:10px;height:10px;border-radius:2px;animation:cfFall 3s ease forwards;pointer-events:none;z-index:9999}
+@keyframes cfFall{0%{transform:translateY(-20px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+
+/* Meal plan */
+.day-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:20px;margin-bottom:14px;box-shadow:var(--card-shadow)}
+.day-head{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;color:var(--amber);margin-bottom:12px}
+.meals-g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px}
+.meal-box{background:var(--s2);border-radius:10px;padding:12px}
+.meal-type{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin-bottom:4px}
+.meal-name{font-weight:500;font-size:.87rem}
+.meal-cal{font-size:.74rem;color:var(--amber);margin-top:3px}
+
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.fu{animation:fadeUp .45s ease both}
+.fu1{animation:fadeUp .45s .1s ease both}
+.fu2{animation:fadeUp .45s .2s ease both}
+.fu3{animation:fadeUp .45s .3s ease both}
+.fu4{animation:fadeUp .45s .4s ease both}
+.fu5{animation:fadeUp .45s .5s ease both}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sb-head">
+    <a href="/" class="logo">Cook<span>Wise</span></a>
+    <div class="head-right">
+      <select class="lang-select" id="langSel" title="Language">
+        <option value="english">🌐 EN</option>
+        <option value="hindi">🇮🇳 हिंदी</option>
+        <option value="marathi">🇮🇳 मराठी</option>
+        <option value="gujarati">🇮🇳 ગુજરાતી</option>
+        <option value="tamil">🇮🇳 தமிழ்</option>
+        <option value="telugu">🇮🇳 తెలుగు</option>
+        <option value="bengali">🇮🇳 বাংলা</option>
+        <option value="kannada">🇮🇳 ಕನ್ನಡ</option>
+        <option value="punjabi">🇮🇳 ਪੰਜਾਬੀ</option>
+        <option value="spanish">🇪🇸 ES</option>
+        <option value="french">🇫🇷 FR</option>
+      </select>
+      <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle theme">🌙</button>
+      <a href="/" class="back">← Back</a>
+    </div>
+  </div>
+
+  <div class="sb-body">
+
+    <!-- Ingredients with autocomplete -->
+    <div>
+      <label class="lbl">Ingredients</label>
+      <div class="ing-wrap">
+        <div class="ing-row">
+          <input id="ingIn" class="ing-inp" type="text" placeholder="e.g. batata, paneer, maggi…" autocomplete="off"/>
+          <button class="btn-add" onclick="addIng()">+</button>
+          <button class="btn-voice" id="voiceBtn" onclick="toggleVoice()">🎤</button>
+        </div>
+        <div class="autocomplete-list" id="acList" style="display:none"></div>
+      </div>
+      <div class="chips" id="chips"></div>
+    </div>
+
+    <!-- Surprise Me -->
+    <button class="btn-surprise" id="surpriseBtn" onclick="surpriseMe()">🎲 Surprise Me</button>
+
+    <!-- Cuisine Type -->
+    <div>
+      <label class="lbl">Cuisine Style</label>
+      <div class="cuisine-grid">
+        <button class="cuisine-btn active" data-c="" onclick="setCuisine(this,'')"><span class="c-icon">🍽️</span>Any</button>
+        <button class="cuisine-btn" data-c="north_indian" onclick="setCuisine(this,'north_indian')"><span class="c-icon">🫓</span>North Indian</button>
+        <button class="cuisine-btn" data-c="south_indian" onclick="setCuisine(this,'south_indian')"><span class="c-icon">🥥</span>South Indian</button>
+        <button class="cuisine-btn" data-c="street_food" onclick="setCuisine(this,'street_food')"><span class="c-icon">🌮</span>Street Food</button>
+        <button class="cuisine-btn" data-c="mughlai" onclick="setCuisine(this,'mughlai')"><span class="c-icon">🍛</span>Mughlai</button>
+        <button class="cuisine-btn" data-c="chinese" onclick="setCuisine(this,'chinese')"><span class="c-icon">🥡</span>Indo-Chinese</button>
+        <button class="cuisine-btn" data-c="italian" onclick="setCuisine(this,'italian')"><span class="c-icon">🍝</span>Italian</button>
+        <button class="cuisine-btn" data-c="healthy" onclick="setCuisine(this,'healthy')"><span class="c-icon">🥗</span>Healthy</button>
+      </div>
+    </div>
+
+    <!-- Chef Persona -->
+    <div>
+      <label class="lbl">Chef Persona</label>
+      <div class="personas">
+        <button class="persona-btn active" data-p="" onclick="setPersona(this,'')"><span class="p-icon">🤖</span>CookWise AI</button>
+        <button class="persona-btn" data-p="gordon" onclick="setPersona(this,'gordon')"><span class="p-icon">👨‍🍳</span>Gordon Ramsay</button>
+        <button class="persona-btn" data-p="sanjeev" onclick="setPersona(this,'sanjeev')"><span class="p-icon">🧑‍🍳</span>Sanjeev Kapoor</button>
+        <button class="persona-btn" data-p="dadi" onclick="setPersona(this,'dadi')"><span class="p-icon">👵</span>Your Dadi</button>
+      </div>
+    </div>
+
+    <!-- Budget -->
+    <div>
+      <label class="lbl">Budget (Optional)</label>
+      <div class="budget-wrap">
+        <span class="budget-pfx">₹</span>
+        <input type="number" class="num-in budget-in" id="budgetIn" placeholder="50" min="0"/>
+      </div>
+    </div>
+
+    <!-- Mood + User type -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label class="lbl">Mood</label>
+        <select id="moodSel">
+          <option value="">— Any —</option>
+          <option value="lazy">😴 Lazy</option>
+          <option value="gym">💪 Gym</option>
+          <option value="party">🎉 Party</option>
+          <option value="comfort">🤗 Comfort</option>
+          <option value="healthy">🥗 Healthy</option>
+          <option value="quick">⚡ Quick</option>
+          <option value="festive">🪔 Festive</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl">I Am A…</label>
+        <select id="userSel">
+          <option value="">— General —</option>
+          <option value="student">🎓 Student</option>
+          <option value="gym_user">💪 Gym</option>
+          <option value="family">👨‍👩‍👧 Family</option>
+          <option value="vegan">🌱 Vegan</option>
+          <option value="professional">💼 Pro</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Servings -->
+    <div>
+      <label class="lbl">Servings</label>
+      <div class="srv-row">
+        <button class="btn-c" onclick="chgSrv(-1)">−</button>
+        <span class="srv-n" id="srvN">2</span>
+        <button class="btn-c" onclick="chgSrv(1)">+</button>
+        <span style="color:var(--muted);font-size:.83rem">people</span>
+      </div>
+    </div>
+
+    <!-- Modes -->
+    <div>
+      <label class="lbl">Modes</label>
+      <div class="tog-row"><span class="tog-lbl">⚡ Jugaad Mode</span><label class="tog"><input type="checkbox" id="jugaadT"><span class="tog-s"></span></label></div>
+      <div class="tog-row"><span class="tog-lbl">😂 Reality Roast</span><label class="tog"><input type="checkbox" id="roastT"><span class="tog-s"></span></label></div>
+    </div>
+
+  </div><!-- /sb-body -->
+
+  <div class="sb-foot">
+    <button class="btn-gen" id="genBtn" onclick="generate()">🍳 Generate Recipe</button>
+    <button class="btn-sec" onclick="genMealPlan()">📅 Weekly Meal Plan</button>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<main class="main" id="main">
+  <div class="empty">
+    <div class="empty-icon">🍳</div>
+    <h2>What's in your kitchen?</h2>
+    <p>Add ingredients, pick your cuisine style and chef persona, then let CookWise do the magic.</p>
+  </div>
+</main>
+
+</div><!-- /layout -->
+
+<script>
+// ─── INDIAN & GLOBAL INGREDIENT SUGGESTIONS ──────────────────────────────
+const SUGGESTIONS = [
+  // Indian street food / dishes
+  {n:"Batata (Potato)",    e:"🥔",h:"vada pav, bhaji"},
+  {n:"Pav (Bread Bun)",    e:"🍞",h:"vada pav, pav bhaji"},
+  {n:"Paneer",             e:"🧀",h:"paneer tikka, palak paneer"},
+  {n:"Maggi",              e:"🍜",h:"instant noodles"},
+  {n:"Atta (Wheat Flour)", e:"🌾",h:"roti, paratha"},
+  {n:"Rice",               e:"🍚",h:"biryani, khichdi"},
+  {n:"Dal",                e:"🫘",h:"dal tadka, dal makhani"},
+  {n:"Besan (Gram Flour)", e:"🟡",h:"chilla, pakora, kadhi"},
+  {n:"Poha",               e:"🍚",h:"poha, chivda"},
+  {n:"Suji (Semolina)",    e:"⬜",h:"upma, halwa"},
+  {n:"Chana (Chickpeas)",  e:"🫘",h:"chana masala, chaat"},
+  {n:"Rajma (Kidney Beans)",e:"🫘",h:"rajma chawal"},
+  {n:"Moong Dal",          e:"🟢",h:"moong chilla, khichdi"},
+  {n:"Aloo (Potato)",      e:"🥔",h:"aloo paratha, sabji"},
+  {n:"Tomato",             e:"🍅",h:"gravy base"},
+  {n:"Onion",              e:"🧅",h:"base for any curry"},
+  {n:"Garlic",             e:"🧄",h:"tadka, chutney"},
+  {n:"Ginger",             e:"🟡",h:"chai, curry"},
+  {n:"Cumin (Jeera)",      e:"🌱",h:"tadka, jeera rice"},
+  {n:"Coriander",          e:"🌿",h:"garnish, chutney"},
+  {n:"Turmeric (Haldi)",   e:"🟡",h:"all curries"},
+  {n:"Mustard Seeds",      e:"⚫",h:"South Indian tadka"},
+  {n:"Ghee",               e:"🧈",h:"dal tadka, halwa"},
+  {n:"Curd (Dahi)",        e:"🥛",h:"raita, kadhi"},
+  {n:"Milk",               e:"🥛",h:"chai, kheer"},
+  {n:"Egg",                e:"🥚",h:"egg curry, omelette"},
+  {n:"Chicken",            e:"🍗",h:"butter chicken, biryani"},
+  {n:"Mutton",             e:"🍖",h:"mutton curry, biryani"},
+  {n:"Tamarind",           e:"🟤",h:"imli chutney, sambar"},
+  {n:"Coconut",            e:"🥥",h:"South Indian curries"},
+  {n:"Jaggery (Gud)",      e:"🟫",h:"sweets, chai"},
+  {n:"Spinach (Palak)",    e:"🥬",h:"palak paneer, saag"},
+  {n:"Peas (Matar)",       e:"🟢",h:"matar paneer, pulao"},
+  {n:"Capsicum",           e:"🫑",h:"sabji, pizza topping"},
+  {n:"Green Chili",        e:"🌶️",h:"tadka, chutney"},
+  {n:"Butter",             e:"🧈",h:"makhani sauce, paratha"},
+  {n:"Cheese",             e:"🧀",h:"pizza, grilled sandwich"},
+  {n:"Bread",              e:"🍞",h:"sandwich, toast"},
+  {n:"Oats",               e:"🌾",h:"breakfast, healthy snack"},
+  {n:"Chocolate",          e:"🍫",h:"desserts"},
+  {n:"Banana",             e:"🍌",h:"smoothie, halwa"},
+  {n:"Mango",              e:"🥭",h:"aamras, lassi"},
+  {n:"Lemon",              e:"🍋",h:"all dishes for tang"},
+];
+
+// ─── State ───────────────────────────────────────────────────────────────
+let ings=[], servings=2, persona='', cuisine='';
+let timerInterval=null, timerSeconds=0;
+const API='/api';
+
+// ─── Theme ───────────────────────────────────────────────────────────────
+function toggleTheme(){
+  const html=document.documentElement;
+  const isDark=html.getAttribute('data-theme')==='dark';
+  html.setAttribute('data-theme', isDark?'light':'dark');
+  document.getElementById('themeBtn').textContent = isDark?'☀️':'🌙';
+}
+
+// ─── Autocomplete ────────────────────────────────────────────────────────
+const ingIn = document.getElementById('ingIn');
+const acList = document.getElementById('acList');
+
+ingIn.addEventListener('input', ()=>{
+  const q = ingIn.value.trim().toLowerCase();
+  if(q.length < 1){ acList.style.display='none'; return; }
+  const matches = SUGGESTIONS.filter(s =>
+    s.n.toLowerCase().includes(q) || (s.h && s.h.toLowerCase().includes(q))
+  ).slice(0,7);
+  if(!matches.length){ acList.style.display='none'; return; }
+  acList.innerHTML = matches.map(s=>`
+    <div class="ac-item" onclick="pickSuggestion('${s.n.replace(/'/g,"\\'")}')">
+      <span class="ac-emoji">${s.e}</span>
+      <div><div class="ac-name">${s.n}</div><div class="ac-hint">${s.h}</div></div>
+    </div>`).join('');
+  acList.style.display='block';
+});
+ingIn.addEventListener('keydown', e=>{ if(e.key==='Enter'){ acList.style.display='none'; addIng(); } });
+document.addEventListener('click', e=>{ if(!e.target.closest('.ing-wrap')) acList.style.display='none'; });
+
+function pickSuggestion(name){
+  ingIn.value = name;
+  acList.style.display='none';
+  addIng();
+}
+
+// ─── Ingredients ─────────────────────────────────────────────────────────
+function addIng(){
+  const val = ingIn.value.trim();
+  val.split(',').map(s=>s.trim()).filter(Boolean).forEach(n=>{
+    if(!ings.find(i=>i.name.toLowerCase()===n.toLowerCase()))
+      ings.push({name:n, expiry_days:null});
+  });
+  ingIn.value=''; renderChips();
+}
+function removeIng(n){ ings=ings.filter(i=>i.name!==n); renderChips(); }
+function renderChips(){
+  document.getElementById('chips').innerHTML = ings.map(i=>
+    `<span class="chip">${i.name}<button class="chip-x" onclick="removeIng('${i.name.replace(/'/g,"\\'")}')">×</button></span>`
+  ).join('');
+}
+
+// ─── Surprise Me ─────────────────────────────────────────────────────────
+async function surpriseMe(){
+  const btn=document.getElementById('surpriseBtn');
+  btn.textContent='🎲 Picking…'; btn.disabled=true;
+  try{
+    const r=await fetch(`${API}/recipe/surprise`);
+    const d=await r.json();
+    ings=d.ingredients.map(n=>({name:n,expiry_days:null}));
+    renderChips(); showToast(`✨ ${d.teaser}`);
+  }catch(e){ showToast('Could not fetch surprise. Try again!'); }
+  btn.textContent='🎲 Surprise Me'; btn.disabled=false;
+}
+
+// ─── Persona / Cuisine ───────────────────────────────────────────────────
+function setPersona(btn,p){
+  document.querySelectorAll('.persona-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); persona=p;
+}
+function setCuisine(btn,c){
+  document.querySelectorAll('.cuisine-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active'); cuisine=c;
+}
+
+// ─── Servings ────────────────────────────────────────────────────────────
+function chgSrv(d){ servings=Math.max(1,Math.min(20,servings+d)); document.getElementById('srvN').textContent=servings; }
+
+// ─── Voice ───────────────────────────────────────────────────────────────
+let recog=null;
+function toggleVoice(){
+  const btn=document.getElementById('voiceBtn');
+  if(!('webkitSpeechRecognition'in window||'SpeechRecognition'in window)){alert('Use Chrome for voice input.');return;}
+  if(recog){recog.stop();recog=null;btn.classList.remove('on');btn.textContent='🎤';return;}
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  recog=new SR(); recog.continuous=false; recog.lang='en-IN'; recog.interimResults=false;
+  btn.classList.add('on'); btn.textContent='⏹';
+  recog.onresult=e=>{ingIn.value=e.results[0][0].transcript; addIng();};
+  recog.onend=()=>{recog=null;btn.classList.remove('on');btn.textContent='🎤';};
+  recog.start();
+}
+
+// ─── Toast ───────────────────────────────────────────────────────────────
+function showToast(msg){
+  const t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--s1);border:1px solid var(--border);color:var(--text);padding:12px 22px;border-radius:10px;z-index:9999;font-size:.88rem;max-width:400px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,.4);transition:opacity .3s';
+  t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0'; setTimeout(()=>t.remove(),300);},3200);
+}
+
+// ─── Confetti ────────────────────────────────────────────────────────────
+function confetti(){
+  const cols=['#F5A623','#FF6B35','#4CAF50','#2196F3','#9C27B0','#E91E63'];
+  for(let i=0;i<55;i++){
+    const c=document.createElement('div'); c.className='confetti-piece';
+    c.style.cssText=`left:${Math.random()*100}vw;top:-10px;background:${cols[i%cols.length]};transform:rotate(${Math.random()*360}deg);animation-delay:${Math.random()*1.5}s;animation-duration:${2+Math.random()*1.5}s`;
+    document.body.appendChild(c); setTimeout(()=>c.remove(),4500);
+  }
+}
+
+// ─── Cook Mode Timer ──────────────────────────────────────────────────────
+function startTimer(s){ stopTimer(); timerSeconds=s; updateTimer();
+  timerInterval=setInterval(()=>{ timerSeconds--; updateTimer();
+    if(timerSeconds<=0){stopTimer();showToast('⏰ Step done! Next step.');}
+  },1000);
+  const b=document.getElementById('timerBtn'); b.textContent='⏹ Stop'; b.classList.add('stop');
+}
+function stopTimer(){
+  if(timerInterval){clearInterval(timerInterval);timerInterval=null;}
+  const b=document.getElementById('timerBtn');
+  if(b){b.textContent='▶ Start';b.classList.remove('stop');}
+}
+function updateTimer(){
+  const el=document.getElementById('timerDisp');
+  if(el){const m=Math.floor(timerSeconds/60),s=timerSeconds%60;el.textContent=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
+}
+function activateStep(idx,mins){
+  document.querySelectorAll('.step-item').forEach((el,i)=>{
+    el.classList.toggle('act-s',i===idx);
+    i<idx?el.classList.add('done-s'):el.classList.remove('done-s');
+  });
+  timerSeconds=(mins||0)*60; updateTimer(); stopTimer();
+}
+
+// ─── Loading ─────────────────────────────────────────────────────────────
+function showLoading(steps){
+  document.getElementById('main').innerHTML=`<div class="loading"><div class="cook-spin">🍳</div><div style="display:flex;flex-direction:column;gap:8px">${steps.map((s,i)=>`<div class="ls ${i===0?'act':''}" id="ls${i}">${s}</div>`).join('')}</div></div>`;
+  let cur=0; const iv=setInterval(()=>{
+    const e=document.getElementById(`ls${cur}`); if(e)e.classList.replace('act','done');
+    cur++; if(cur<steps.length){const n=document.getElementById(`ls${cur}`);if(n)n.classList.add('act');}
+    else clearInterval(iv);
+  },900);
+}
+function showError(msg){
+  document.getElementById('main').innerHTML=`<div class="err-box"><h3>⚠️ Something went wrong</h3><p style="margin-top:8px">${msg}</p><p style="margin-top:12px;font-size:.8rem;color:var(--muted)">Check your terminal for the full error. Ensure GEMINI_API_KEY is set in .env</p></div>`;
+}
+
+// ─── Generate ────────────────────────────────────────────────────────────
+async function generate(){
+  if(!ings.length){showToast('Add at least one ingredient!');return;}
+  showLoading(['Analysing ingredient combination…','Gemini AI generating recipe…','Calculating masalas & quantities…','Running taste, budget & health engines…','Building your report…']);
+  const lang = document.getElementById('langSel').value;
+  const params = new URLSearchParams();
+  if(persona) params.set('chef_persona', persona);
+  if(lang && lang!=='english') params.set('language', lang);
+  const url = `${API}/recipe/generate${params.toString()?'?'+params:''}`;
+  const payload={
+    ingredients:ings, budget:parseFloat(document.getElementById('budgetIn').value)||null,
+    mood:document.getElementById('moodSel').value||null, user_type:document.getElementById('userSel').value||null,
+    jugaad_mode:document.getElementById('jugaadT').checked, reality_roast:document.getElementById('roastT').checked,
+    servings, dietary_restrictions:null, cuisine_preference:cuisine||null
+  };
+  try{
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok){const err=await res.text(); throw new Error(`Server ${res.status}: ${err}`);}
+    const data=await res.json();
+    renderResult(data);
+    if(data.cookwise_score>=80) setTimeout(confetti,400);
+  }catch(e){ showError(e.message); }
+}
+
+// ─── Meal Plan ───────────────────────────────────────────────────────────
+async function genMealPlan(){
+  if(!ings.length){showToast('Add at least one ingredient!');return;}
+  showLoading(['Planning your week…','Balancing nutrition across 7 days…','Building your shopping list…']);
+  const payload={ingredients:ings,days:7,user_type:document.getElementById('userSel').value||null,budget_per_day:parseFloat(document.getElementById('budgetIn').value)||null};
+  try{
+    const r=await fetch(`${API}/meal-planner/generate`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const d=await r.json(); renderMealPlan(d.meal_plan);
+  }catch(e){ showError(e.message); }
+}
+
+// ─── Render Result ────────────────────────────────────────────────────────
+function renderResult(data){
+  const r=data.recipe, t=data.taste_score, b=data.budget, h=data.health, cw=data.cookwise_score||0;
+  const sc=t.score>=75?'#4CAF50':t.score>=50?'#FF9800':'#F44336';
+  const cwC=2*Math.PI*28, hC=2*Math.PI*34;
+
+  const usedHtml=(r.ingredients_used||[]).map(i=>{
+    const nm=typeof i==='string'?i:(i.name||'');
+    const q=typeof i==='object'?i.quantity||'':'';
+    const p=typeof i==='object'?i.prep_note||'':'';
+    return `<div class="ing-item"><div class="ing-name">✅ ${nm}</div>${q?`<div class="ing-qty">${q}</div>`:''}${p?`<div class="ing-prep">${p}</div>`:''}</div>`;
+  }).join('');
+
+  const missHtml=(r.missing_ingredients||[]).map(m=>
+    `<div class="ing-item miss"><div class="ing-name">⚠️ ${m.name}${m.optional?' <small style="color:var(--muted)">(opt)</small>':''}</div>${m.quantity?`<div class="ing-qty">${m.quantity}</div>`:''}${m.why_needed?`<div class="ing-prep">${m.why_needed}</div>`:''}</div>`
+  ).join('');
+
+  const masalaHtml=(r.masalas_and_spices||[]).map(m=>
+    `<div class="masala-item"><div class="masala-name">🌶 ${m.name}</div><div class="masala-qty">${m.quantity}</div>${m.purpose?`<div class="masala-why">${m.purpose}</div>`:''}</div>`
+  ).join('');
+
+  const stepsHtml=(r.steps||[]).map((s,i)=>
+    `<li class="step-item" onclick="activateStep(${i},${s.time_min||0})">
+      <div class="step-left">
+        <div class="step-num">${s.step||i+1}</div>
+        ${i<(r.steps||[]).length-1?'<div class="step-line"></div>':''}
+      </div>
+      <div class="step-right">
+        ${s.title?`<div class="step-stitle">${s.title}</div>`:''}
+        <div class="step-txt">${s.instruction}</div>
+        ${s.time_min?`<div class="step-time">⏱ ~${s.time_min} min</div>`:''}
+        ${s.pro_tip?`<span class="step-tip">💡 ${s.pro_tip}</span>`:''}
+        ${s.warning?`<span class="step-warn">⚠️ ${s.warning}</span>`:''}
+      </div>
+    </li>`
+  ).join('');
+
+  const bItemsHtml=(b.items||[]).map(item=>
+    `<div class="b-item">
+      <span>${item.within_budget?'✅':'⚠️'} ${item.name}${item.optional?' <small style="color:var(--muted)">(opt)</small>':''}</span>
+      <span class="b-cost">≈ ₹${item.estimated_cost_inr} / ${item.unit}</span>
+    </div>
+    ${item.alternative?`<div class="b-alt">💡 Try <strong>${item.alternative.name}</strong> instead — saves ${item.alternative.savings_pct}%</div>`:''}`
+  ).join('');
+
+  const ps=h.per_serving||{};
+  const warnHtml=(h.warnings||[]).map(w=>`<div class="hw">${w.message||w}</div>`).join('');
+  const posHtml=(h.positives||[]).map(p=>`<div class="hp">${p}</div>`).join('');
+  const pairHtml=(r.pairs_well_with||[]).map(p=>`<span class="pair-tag">🍽️ ${p}</span>`).join('');
+
+  const roastHtml=r.reality_roast?`<div class="card roast-card fu5"><div class="ch"><div class="ct">😂 Reality Roast</div></div><div class="cb"><p class="roast-txt">"${r.reality_roast}"</p></div></div>`:'';
+  const chefHtml=r.chef_note?`<div class="card fu4"><div class="ch"><div class="ct">${pIcon(data.metadata?.chef_persona)} Chef's Note</div></div><div class="cb"><div class="chef-note">${r.chef_note}</div></div></div>`:'';
+
+  document.getElementById('main').innerHTML=`
+    ${data.expiry_note?`<div class="exp-banner fu">⏰ ${data.expiry_note.message}</div>`:''}
+
+    <!-- Header -->
+    <div style="margin-bottom:20px" class="fu">
+      <div class="rname">${r.recipe_name||'Your Recipe'}</div>
+      <div class="rtagline">${r.tagline||''}</div>
+      <div class="rmeta">
+        <span class="badge">🍽️ ${r.cuisine_type||'Mixed'}</span>
+        <span class="badge">⚡ ${r.difficulty||'?'}</span>
+        <span class="badge">⏱ ${r.prep_time_min||'?'}min prep</span>
+        <span class="badge">🔥 ${r.cook_time_min||'?'}min cook</span>
+        <span class="badge">👤 ${servings} serving${servings>1?'s':''}</span>
+        ${r.calories_per_serving?`<span class="badge">🔥 ~${r.calories_per_serving} kcal</span>`:''}
+      </div>
+    </div>
+
+    <!-- CookWise Score -->
+    <div class="card fu1">
+      <div class="cw-bar">
+        <div class="cw-ring">
+          <svg width="68" height="68" viewBox="0 0 68 68">
+            <circle cx="34" cy="34" r="28" fill="none" stroke="var(--s3)" stroke-width="6"/>
+            <circle cx="34" cy="34" r="28" fill="none" stroke="var(--amber)" stroke-width="6"
+              stroke-dasharray="${(cwC*cw/100).toFixed(1)} ${cwC.toFixed(1)}" stroke-linecap="round"/>
+          </svg>
+          <div class="cw-ring-txt">${cw}</div>
+        </div>
+        <div class="cw-info">
+          <div class="cw-title">CookWise Score™</div>
+          <div class="cw-sub">${cwLabel(cw)}</div>
+          <div class="cw-pills">
+            <span class="pill taste">🧪 Taste ${t.score}%</span>
+            <span class="pill health">❤️ Health ${h.health_score}</span>
+            <span class="pill budget">${b.within_budget?'✅':'⚠️'} Budget</span>
+          </div>
+        </div>
+        <button class="btn-share" onclick="shareRecipe('${(r.recipe_name||'').replace(/'/g,"\\'")}',${cw})">📤 Share</button>
+      </div>
+    </div>
+
+    <!-- Taste Score -->
+    <div class="card fu1">
+      <div class="ch"><div class="ct">🧪 Taste Compatibility</div><span style="color:var(--muted);font-size:.83rem">${t.emoji||''} ${t.label||''}</span></div>
+      <div class="cb">
+        <div class="taste-main">
+          <div><div class="taste-big" style="color:${sc}">${t.score}%</div><div class="taste-lbl">${t.label}</div></div>
+          <div class="bars">
+            <div class="bar-r"><div class="bar-lbl"><span>😋 Delicious</span><span>${t.breakdown?.delicious_pct||0}%</span></div><div class="bar-t"><div class="bar-f bf-g" data-w="${t.breakdown?.delicious_pct||0}"></div></div></div>
+            <div class="bar-r"><div class="bar-lbl"><span>🧪 Experimental</span><span>${t.breakdown?.experimental_pct||0}%</span></div><div class="bar-t"><div class="bar-f bf-o" data-w="${t.breakdown?.experimental_pct||0}"></div></div></div>
+            <div class="bar-r"><div class="bar-lbl"><span>⚠️ Risky</span><span>${t.breakdown?.risky_pct||0}%</span></div><div class="bar-t"><div class="bar-f bf-r" data-w="${t.breakdown?.risky_pct||0}"></div></div></div>
+          </div>
+        </div>
+        ${(t.reasons||[]).length?`<ul class="reasons">${t.reasons.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}
+        ${(t.warnings||[]).length?`<div style="margin-bottom:14px">${t.warnings.map(w=>`<div class="hw">${w}</div>`).join('')}</div>`:''}
+        <div class="regret-box">
+          <div style="font-size:1.6rem">😅</div>
+          <div><div class="regret-t">${t.regret_predictor?.title||''}</div><div class="regret-d">${t.regret_predictor?.description||''}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Masalas -->
+    ${masalaHtml?`<div class="card fu2"><div class="ch"><div class="ct">🌶️ Masalas & Spices</div><span style="font-size:.78rem;color:var(--muted)">Exact quantities</span></div><div class="cb"><div class="masala-grid">${masalaHtml}</div></div></div>`:''}
+
+    <!-- Ingredients + Steps -->
+    <div class="two-col fu2">
+      <div class="card" style="margin-bottom:0">
+        <div class="ch"><div class="ct">🛒 Ingredients</div></div>
+        <div class="cb">
+          ${usedHtml?`<div style="margin-bottom:14px"><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">In kitchen</div><div class="ing-g">${usedHtml}</div></div>`:''}
+          ${missHtml?`<div><div style="font-size:.7rem;color:var(--orange);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px">Need to buy</div><div class="ing-g">${missHtml}</div></div>`:''}
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="cook-bar">
+          <div><div style="font-size:.72rem;color:var(--muted);margin-bottom:2px">COOK MODE — click any step</div><div class="timer-disp" id="timerDisp">00:00</div></div>
+          <button class="btn-timer" id="timerBtn" onclick="timerInterval?stopTimer():startTimer(timerSeconds||60)">▶ Start</button>
+        </div>
+        <div class="cb" style="padding:10px"><ol class="steps-list">${stepsHtml}</ol></div>
+      </div>
+    </div>
+
+    <!-- Budget + Health -->
+    <div class="two-col fu3" style="margin-top:20px">
+      <div class="card" style="margin-bottom:0">
+        <div class="ch"><div class="ct">💰 Budget Analysis</div></div>
+        <div class="cb">
+          <div class="bv">${b.verdict}</div>
+          ${bItemsHtml}
+          ${(b.savings_tips||[]).map(x=>`<div class="savings-tip">${x}</div>`).join('')}
+        </div>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="ch"><div class="ct">❤️ Health Analysis</div></div>
+        <div class="cb">
+          <div class="health-top">
+            <div class="h-ring">
+              <svg width="78" height="78" viewBox="0 0 78 78">
+                <circle cx="39" cy="39" r="34" fill="none" stroke="var(--s3)" stroke-width="7"/>
+                <circle cx="39" cy="39" r="34" fill="none" stroke="#4CAF50" stroke-width="7"
+                  stroke-dasharray="${(hC*h.health_score/100).toFixed(1)} ${hC.toFixed(1)}" stroke-linecap="round"/>
+              </svg>
+              <div class="h-ring-txt">${h.health_score}</div>
+            </div>
+            <div>
+              <div style="font-weight:600;font-size:.95rem">${h.calorie_emoji} ${h.calorie_label}</div>
+              <div style="color:var(--muted);font-size:.82rem">${ps.cal||'?'} kcal / serving</div>
+            </div>
+          </div>
+          <div class="macros">
+            <div class="macro"><div class="macro-v">${ps.protein??'?'}g</div><div class="macro-n">Protein</div></div>
+            <div class="macro"><div class="macro-v">${ps.carbs??'?'}g</div><div class="macro-n">Carbs</div></div>
+            <div class="macro"><div class="macro-v">${ps.fat??'?'}g</div><div class="macro-n">Fat</div></div>
+            <div class="macro"><div class="macro-v">${ps.fiber??'?'}g</div><div class="macro-n">Fiber</div></div>
+          </div>
+          ${warnHtml}${posHtml}
+          ${ps.cal?`<div class="burn-box">🚶 Walk: <span>~${Math.round(ps.cal/4.5)} min</span> &nbsp; 🚴 Cycle: <span>~${Math.round(ps.cal/8)} min</span></div>`:''}
+        </div>
+      </div>
+    </div>
+
+    <!-- Plating -->
+    ${(r.garnish_and_plating||r.pairs_well_with?.length||r.storage_tip)?`
+    <div class="card fu3" style="margin-top:20px">
+      <div class="ch"><div class="ct">🎨 Plating & Serving</div></div>
+      <div class="cb">
+        ${r.garnish_and_plating?`<div class="plating-box">🍽️ ${r.garnish_and_plating}</div>`:''}
+        ${pairHtml?`<div style="margin-bottom:14px"><div style="font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:9px">Pairs Well With</div><div class="pairs-list">${pairHtml}</div></div>`:''}
+        ${r.storage_tip?`<div class="storage-box">📦 ${r.storage_tip}</div>`:''}
+      </div>
+    </div>`:''}
+
+    <!-- Pro Tips -->
+    ${(r.pro_tips||[]).length?`<div class="card fu4"><div class="ch"><div class="ct">✨ Pro Tips</div></div><div class="cb"><ul class="tips-list">${r.pro_tips.map(x=>`<li>${x}</li>`).join('')}</ul></div></div>`:''}
+
+    ${chefHtml}
+    ${roastHtml}
+  `;
+
+  requestAnimationFrame(()=>setTimeout(()=>{ document.querySelectorAll('.bar-f[data-w]').forEach(el=>el.style.width=el.dataset.w+'%'); },200));
+}
+
+function cwLabel(s){
+  if(s>=90)return '🌟 Absolutely outstanding!';
+  if(s>=75)return '😋 Really solid choice.';
+  if(s>=60)return '👍 Good, with some caveats.';
+  if(s>=45)return '🤔 Risky territory.';
+  return '😬 Brave choice, chef.';
+}
+function pIcon(p){ return {gordon:'👨‍🍳',sanjeev:'🧑‍🍳',dadi:'👵',jamie:'🍋'}[p]||'🤖'; }
+function shareRecipe(name, score){
+  const txt=`I made "${name}" with CookWise! Score: ${score}/100 🍳\nTry it at localhost:8000`;
+  if(navigator.share) navigator.share({title:'CookWise Recipe',text:txt});
+  else navigator.clipboard.writeText(txt).then(()=>showToast('📋 Copied to clipboard!'));
+}
+
+// ─── Meal Plan ────────────────────────────────────────────────────────────
+function renderMealPlan(plan){
+  if(!plan?.plan){showError('Could not generate meal plan.');return;}
+  document.getElementById('main').innerHTML=`
+    <div class="fu" style="margin-bottom:20px">
+      <div class="rname">📅 Your Week of Meals</div>
+      <div class="rtagline">AI-curated, nutritionally balanced</div>
+    </div>
+    ${plan.plan.map(d=>`
+    <div class="day-card">
+      <div class="day-head">Day ${d.day}${d.day_theme?` — ${d.day_theme}`:''}</div>
+      <div class="meals-g">${['breakfast','lunch','dinner','snack'].map(m=>d[m]?`
+        <div class="meal-box"><div class="meal-type">${m}</div><div class="meal-name">${d[m].name}</div><div class="meal-cal">⏱${d[m].time_min}min${d[m].calories?` · 🔥${d[m].calories}kcal`:''}</div></div>`:'').join('')}</div>
+    </div>`).join('')}
+    ${(plan.shopping_list||[]).length?`
+    <div class="card">
+      <div class="ch"><div class="ct">🛒 Shopping List</div></div>
+      <div class="cb">
+        ${plan.shopping_list.map(i=>`<div class="b-item"><span>${i.item} <small style="color:var(--muted)">(${i.quantity}) ${i.category||''}</small></span><span class="b-cost">≈ ₹${i.estimated_cost_inr}</span></div>`).join('')}
+        ${plan.weekly_nutrition_summary?`<div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap">
+          <div class="macro"><div class="macro-v">${plan.weekly_nutrition_summary.avg_calories_per_day}</div><div class="macro-n">Avg kcal/day</div></div>
+          <div class="macro"><div class="macro-v">${plan.weekly_nutrition_summary.protein_level}</div><div class="macro-n">Protein</div></div>
+          <div class="macro"><div class="macro-v">${plan.weekly_nutrition_summary.variety_score}/10</div><div class="macro-n">Variety</div></div>
+        </div>`:''}
+        ${(plan.meal_prep_tips||[]).length?`<ul class="tips-list" style="margin-top:14px">${plan.meal_prep_tips.map(x=>`<li>${x}</li>`).join('')}</ul>`:''}
+      </div>
+    </div>`:''}
+  `;
+}
+</script>
+</body>
+</html>

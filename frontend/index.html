@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>CookWise — AI-Powered Smart Recipes</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --amber:#F5A623;--amber-d:#C87A0D;--amber-glow:rgba(245,166,35,.15);
+  --bg:#0F0D0A;--s1:#1A1612;--s2:#241F18;
+  --text:#EDE8DF;--muted:#9A9080;--border:rgba(245,166,35,.15);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;overflow-x:hidden}
+
+/* Nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:22px 60px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(15,13,10,.95),transparent);backdrop-filter:blur(8px)}
+.nav-logo{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:700;color:var(--amber);text-decoration:none}
+.nav-logo span{color:var(--text)}
+.nav-links{display:flex;gap:36px;align-items:center}
+.nav-links a{color:var(--muted);text-decoration:none;font-size:.9rem;transition:color .2s}
+.nav-links a:hover{color:var(--amber)}
+.btn-nav{background:var(--amber);color:#0F0D0A;padding:10px 24px;border-radius:8px;font-size:.9rem;font-weight:600;text-decoration:none;transition:all .2s}
+.btn-nav:hover{background:var(--amber-d);transform:translateY(-1px)}
+
+/* Hero */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:120px 40px 80px;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(245,166,35,.1) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 80% 80%,rgba(255,107,53,.07) 0%,transparent 50%)}
+.badge{display:inline-flex;align-items:center;gap:8px;background:var(--amber-glow);border:1px solid var(--border);padding:8px 18px;border-radius:999px;font-size:.78rem;font-weight:500;letter-spacing:.08em;color:var(--amber);text-transform:uppercase;margin-bottom:32px;animation:fadeUp .8s ease both}
+.badge::before{content:'✦';font-size:.7rem}
+h1{font-family:'Cormorant Garamond',serif;font-size:clamp(3.5rem,8vw,7.5rem);font-weight:700;line-height:1.05;letter-spacing:-.03em;margin-bottom:12px;animation:fadeUp .8s .1s ease both}
+h1 em{font-style:italic;color:var(--amber)}
+.hero-sub{font-family:'Cormorant Garamond',serif;font-size:clamp(1.2rem,3vw,2rem);font-style:italic;color:var(--muted);margin-bottom:40px;animation:fadeUp .8s .2s ease both}
+.hero-desc{max-width:540px;color:var(--muted);font-size:1.05rem;line-height:1.7;margin-bottom:48px;animation:fadeUp .8s .3s ease both}
+.hero-cta{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;animation:fadeUp .8s .4s ease both}
+.btn-primary{background:var(--amber);color:#0F0D0A;padding:16px 40px;border-radius:10px;font-size:1rem;font-weight:600;text-decoration:none;transition:all .25s;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--amber-d);transform:translateY(-2px);box-shadow:0 12px 40px rgba(245,166,35,.3)}
+.btn-outline{background:transparent;color:var(--text);padding:16px 40px;border-radius:10px;font-size:1rem;font-weight:500;text-decoration:none;border:1px solid var(--border);transition:all .25s}
+.btn-outline:hover{border-color:var(--amber);color:var(--amber)}
+.scroll-hint{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--muted);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;animation:fadeUp 1s .8s both}
+.scroll-line{width:1px;height:50px;background:linear-gradient(to bottom,var(--amber),transparent);animation:pulse 2s ease infinite}
+
+/* Stats */
+.stats-bar{background:var(--s1);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:32px 60px;display:flex;align-items:center;justify-content:center;gap:80px;flex-wrap:wrap}
+.stat-num{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:700;color:var(--amber);line-height:1}
+.stat-lbl{font-size:.78rem;color:var(--muted);letter-spacing:.06em;margin-top:6px}
+.stat-sep{width:1px;height:50px;background:var(--border)}
+
+/* Sections */
+section{padding:100px 60px}
+.slbl{font-size:.74rem;letter-spacing:.15em;text-transform:uppercase;color:var(--amber);font-weight:600;margin-bottom:16px}
+.stitle{font-family:'Cormorant Garamond',serif;font-size:clamp(2.5rem,5vw,4rem);font-weight:700;line-height:1.1;letter-spacing:-.02em}
+.stitle em{font-style:italic;color:var(--amber)}
+
+/* Features grid */
+.feat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(295px,1fr));gap:22px;margin-top:56px}
+.feat-card{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:34px;transition:all .3s;position:relative;overflow:hidden}
+.feat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--amber),transparent);opacity:0;transition:opacity .3s}
+.feat-card:hover{border-color:var(--amber);transform:translateY(-4px);box-shadow:0 20px 60px rgba(245,166,35,.1)}
+.feat-card:hover::before{opacity:1}
+.feat-icon{font-size:2.2rem;margin-bottom:20px;display:block}
+.feat-card h3{font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:600;margin-bottom:12px}
+.feat-card p{color:var(--muted);font-size:.93rem;line-height:1.65}
+.feat-tag{display:inline-block;margin-top:16px;background:var(--amber-glow);color:var(--amber);padding:4px 12px;border-radius:999px;font-size:.73rem;font-weight:600;letter-spacing:.05em}
+
+/* Flow */
+.flow-sec{background:var(--s1)}
+.flow-steps{display:flex;gap:0;margin-top:64px;flex-wrap:wrap}
+.flow-step{flex:1;min-width:190px;text-align:center;padding:0 28px;position:relative}
+.flow-step:not(:last-child)::after{content:'→';position:absolute;right:-14px;top:28px;font-size:1.5rem;color:var(--amber)}
+.step-num{width:64px;height:64px;background:var(--amber-glow);border:2px solid var(--amber);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:700;color:var(--amber);margin:0 auto 20px}
+.flow-step h4{font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:600;margin-bottom:10px}
+.flow-step p{color:var(--muted);font-size:.86rem;line-height:1.6}
+
+/* Demo card */
+.demo-sec{background:linear-gradient(135deg,var(--bg) 0%,var(--s2) 100%)}
+.demo-card{background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:44px;max-width:680px;margin:56px auto 0}
+.demo-title{font-family:'Cormorant Garamond',serif;font-size:1.8rem;font-weight:600;margin-bottom:8px}
+.demo-tags{display:flex;gap:10px;flex-wrap:wrap;margin:22px 0}
+.dtag{background:var(--s2);border:1px solid var(--border);padding:7px 16px;border-radius:999px;font-size:.88rem}
+.score-row{display:flex;justify-content:space-between;align-items:center;margin:28px 0 14px}
+.score-big{font-family:'Cormorant Garamond',serif;font-size:4rem;font-weight:700;color:var(--amber);line-height:1}
+.meter-bar{height:8px;background:var(--s2);border-radius:999px;overflow:hidden;margin-bottom:11px}
+.meter-fill{height:100%;border-radius:999px;transition:width 1.5s cubic-bezier(.4,0,.2,1)}
+.mf-g{background:linear-gradient(90deg,#4CAF50,#8BC34A)}
+.mf-o{background:linear-gradient(90deg,#FF9800,#FFC107)}
+.mf-r{background:linear-gradient(90deg,#F44336,#FF5722)}
+.meter-lbl{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:8px}
+.insight{background:var(--s2);border-left:3px solid var(--amber);padding:15px 18px;border-radius:0 8px 8px 0;margin-top:22px;font-size:.88rem;color:var(--muted);line-height:1.7}
+
+/* Tech */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:18px;margin-top:48px}
+.tech-card{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:26px 18px;text-align:center;transition:all .2s}
+.tech-card:hover{border-color:var(--amber);transform:translateY(-3px)}
+.tech-icon{font-size:2rem;margin-bottom:12px}
+.tech-name{font-weight:600;font-size:.88rem;margin-bottom:3px}
+.tech-role{font-size:.76rem;color:var(--muted)}
+
+/* CTA */
+.cta-sec{text-align:center;background:radial-gradient(ellipse 70% 80% at 50% 50%,rgba(245,166,35,.09) 0%,transparent 70%)}
+
+/* Footer */
+footer{background:var(--s1);border-top:1px solid var(--border);padding:36px 60px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:18px}
+.foot-logo{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--amber)}
+footer p{color:var(--muted);font-size:.83rem}
+.foot-links{display:flex;gap:26px}
+.foot-links a{color:var(--muted);text-decoration:none;font-size:.83rem}
+.foot-links a:hover{color:var(--amber)}
+
+/* Reveal */
+.reveal{opacity:0;transform:translateY(36px);transition:opacity .7s ease,transform .7s ease}
+.reveal.visible{opacity:1;transform:translateY(0)}
+.rd1{transition-delay:.1s}.rd2{transition-delay:.2s}.rd3{transition-delay:.3s}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:.4}50%{opacity:1}}
+
+@media(max-width:768px){
+  nav{padding:18px 22px}.nav-links{display:none}
+  section{padding:64px 22px}.stats-bar{padding:26px 22px;gap:28px}.stat-sep{display:none}
+  footer{padding:24px 22px;flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">Cook<span>Wise</span></a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How It Works</a>
+    <a href="#tech">Tech Stack</a>
+    <a href="/api/docs" target="_blank">API</a>
+    <a href="/app" class="btn-nav">Try Now →</a>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="badge">AI-Powered Recipe Intelligence</div>
+  <h1>Cook <em>Smarter,</em><br/>Waste Less,<br/>Eat Better.</h1>
+  <p class="hero-sub">Where ingredients meet intelligence.</p>
+  <p class="hero-desc">Enter what's in your fridge. CookWise generates recipes, scores taste compatibility, optimises your budget, and predicts your regret — powered by Gemini AI.</p>
+  <div class="hero-cta">
+    <a href="/app" class="btn-primary">🍳 Start Cooking →</a>
+    <a href="#features" class="btn-outline">See Features</a>
+  </div>
+  <div class="scroll-hint"><div class="scroll-line"></div>Scroll</div>
+</section>
+
+<!-- Stats -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-num">12+</div><div class="stat-lbl">AI Modules</div></div>
+  <div class="stat-sep"></div>
+  <div class="stat-item"><div class="stat-num">8</div><div class="stat-lbl">Cuisine Styles</div></div>
+  <div class="stat-sep"></div>
+  <div class="stat-item"><div class="stat-num">4</div><div class="stat-lbl">Chef Personas</div></div>
+  <div class="stat-sep"></div>
+  <div class="stat-item"><div class="stat-num">11</div><div class="stat-lbl">Languages</div></div>
+</div>
+
+<!-- Features -->
+<section id="features">
+  <p class="slbl reveal">Everything you need</p>
+  <h2 class="stitle reveal">Not just recipes.<br/><em>Decision intelligence.</em></h2>
+  <div class="feat-grid">
+    <div class="feat-card reveal rd1"><span class="feat-icon">🧪</span><h3>Taste Compatibility Score</h3><p>Our proprietary engine rates ingredient combinations — 90% delicious, 50% experimental, 10% risky — with reasoning behind every prediction.</p><span class="feat-tag">Core USP</span></div>
+    <div class="feat-card reveal rd2"><span class="feat-icon">😅</span><h3>Regret Predictor</h3><p>Will you regret this combo? Our AI warns you before you cook. Honest, specific to your ingredients, always useful.</p><span class="feat-tag">Fun + Functional</span></div>
+    <div class="feat-card reveal rd3"><span class="feat-icon">💰</span><h3>Budget-Aware Cooking</h3><p>Enter your budget. Get recipes that fit. Missing an ingredient? We suggest the cheapest alternative with exact savings percentage.</p><span class="feat-tag">Smart Finance</span></div>
+    <div class="feat-card reveal rd1"><span class="feat-icon">❤️</span><h3>Health Impact Analyzer</h3><p>Calorie estimates, macro breakdown, sodium warnings, and a health score — before you even start cooking.</p><span class="feat-tag">Wellness</span></div>
+    <div class="feat-card reveal rd2"><span class="feat-icon">🌶️</span><h3>Masala Intelligence</h3><p>Exact spice quantities with the reason each masala is used. Know exactly when to add cumin, what turmeric does, why mustard seeds pop first.</p><span class="feat-tag">Indian Cuisine</span></div>
+    <div class="feat-card reveal rd3"><span class="feat-icon">👨‍🍳</span><h3>Chef Personas</h3><p>Get your recipe from Gordon Ramsay, Sanjeev Kapoor, your Dadi, or Jamie Oliver. Each completely changes the voice, tips, and style.</p><span class="feat-tag">Personalised</span></div>
+    <div class="feat-card reveal rd1"><span class="feat-icon">🍽️</span><h3>8 Cuisine Styles</h3><p>North Indian, South Indian, Street Food, Mughlai, Indo-Chinese, Italian, Continental, or Healthy. One click changes the entire recipe direction.</p><span class="feat-tag">Versatile</span></div>
+    <div class="feat-card reveal rd2"><span class="feat-icon">🌐</span><h3>Language Translation</h3><p>Can't read English? Get your full recipe in Hindi, Marathi, Tamil, Telugu, Gujarati, Bengali, Punjabi, Kannada, Spanish, or French.</p><span class="feat-tag">Inclusive</span></div>
+    <div class="feat-card reveal rd3"><span class="feat-icon">⏱</span><h3>Cook Mode Timer</h3><p>Click any recipe step to activate it. Start a countdown timer per step. Cook hands-free with clear visual progress tracking.</p><span class="feat-tag">Interactive</span></div>
+    <div class="feat-card reveal rd1"><span class="feat-icon">🎲</span><h3>Surprise Me</h3><p>No inspiration? Hit Surprise Me and get a random creative ingredient combination with an AI teaser about what you could make.</p><span class="feat-tag">Discovery</span></div>
+    <div class="feat-card reveal rd2"><span class="feat-icon">⚡</span><h3>Jugaad Mode</h3><p>Limited or unusual ingredients? CookWise finds the most ingenious combinations — India's creative kitchen philosophy, powered by AI.</p><span class="feat-tag">Indian Innovation</span></div>
+    <div class="feat-card reveal rd3"><span class="feat-icon">📅</span><h3>Weekly Meal Planner</h3><p>Plan 7 days of varied, nutritionally balanced meals. Get a complete categorised shopping list with cost estimates.</p><span class="feat-tag">Planning</span></div>
+  </div>
+</section>
+
+<!-- How it works -->
+<section id="how" class="flow-sec">
+  <p class="slbl reveal" style="text-align:center">Simple. Powerful.</p>
+  <h2 class="stitle reveal" style="text-align:center">From fridge to <em>feast</em> in seconds.</h2>
+  <div class="flow-steps">
+    <div class="flow-step reveal"><div class="step-num">1</div><h4>Add Ingredients</h4><p>Type, speak, or pick from our Indian ingredient suggestions. Add expiry dates and budget optionally.</p></div>
+    <div class="flow-step reveal rd1"><div class="step-num">2</div><h4>Choose Your Style</h4><p>Pick cuisine type, chef persona, mood, and language. CookWise adapts to you.</p></div>
+    <div class="flow-step reveal rd2"><div class="step-num">3</div><h4>AI Analyses</h4><p>Gemini generates your recipe. Our 5 engines score taste, budget, health, masalas, and more.</p></div>
+    <div class="flow-step reveal rd3"><div class="step-num">4</div><h4>Cook & Learn</h4><p>Follow Cook Mode steps with timers. Get pro tips, chef notes, and plating guidance.</p></div>
+  </div>
+</section>
+
+<!-- Demo -->
+<section class="demo-sec">
+  <p class="slbl" style="text-align:center">Live example</p>
+  <h2 class="stitle" style="text-align:center">See the <em>intelligence</em> in action.</h2>
+  <div class="demo-card reveal">
+    <div class="demo-title">🍜 Creamy Spiced Maggi</div>
+    <div style="color:var(--muted);font-size:.88rem">Ingredients entered:</div>
+    <div class="demo-tags">
+      <span class="dtag">🍜 Maggi</span><span class="dtag">🥛 Milk</span>
+      <span class="dtag">🧈 Butter</span><span class="dtag">🧀 Cheese</span><span class="dtag">🌶️ Chili</span>
+    </div>
+    <div class="score-row">
+      <div><div class="score-big">78%</div><div style="color:var(--muted);font-size:.85rem;margin-top:4px">Taste Score</div></div>
+      <div style="text-align:right"><div style="font-size:2rem">😋</div><div style="font-weight:600;color:var(--amber);margin-top:4px">Good</div></div>
+    </div>
+    <div class="meter-lbl"><span>😋 Delicious 78%</span><span>78/100</span></div>
+    <div class="meter-bar"><div class="meter-fill mf-g" id="m1" style="width:0%"></div></div>
+    <div class="meter-lbl"><span>🧪 Experimental 15%</span><span>15/100</span></div>
+    <div class="meter-bar"><div class="meter-fill mf-o" id="m2" style="width:0%"></div></div>
+    <div class="meter-lbl"><span>⚠️ Risky 7%</span><span>7/100</span></div>
+    <div class="meter-bar"><div class="meter-fill mf-r" id="m3" style="width:0%"></div></div>
+    <div class="insight">
+      ✅ Umami richness + cream = restaurant quality &nbsp;|&nbsp;
+      ✅ Spice cooled by cream — Indian classic &nbsp;|&nbsp;
+      💰 Within ₹50 budget &nbsp;|&nbsp;
+      😅 Regret: <strong>You'll probably enjoy this!</strong>
+    </div>
+  </div>
+</section>
+
+<!-- Tech Stack -->
+<section id="tech">
+  <p class="slbl reveal">Built to scale</p>
+  <h2 class="stitle reveal">Production-grade <em>architecture.</em></h2>
+  <div class="tech-grid">
+    <div class="tech-card reveal"><div class="tech-icon">⚡</div><div class="tech-name">FastAPI</div><div class="tech-role">Python Backend</div></div>
+    <div class="tech-card reveal rd1"><div class="tech-icon">🤖</div><div class="tech-name">Gemini 3</div><div class="tech-role">AI Engine</div></div>
+    <div class="tech-card reveal rd2"><div class="tech-icon">🍃</div><div class="tech-name">MongoDB</div><div class="tech-role">Database</div></div>
+    <div class="tech-card reveal rd3"><div class="tech-icon">🎨</div><div class="tech-name">Vanilla JS</div><div class="tech-role">Frontend</div></div>
+    <div class="tech-card reveal"><div class="tech-icon">🔒</div><div class="tech-name">Pydantic v2</div><div class="tech-role">Validation</div></div>
+    <div class="tech-card reveal rd1"><div class="tech-icon">🧪</div><div class="tech-name">Taste Engine</div><div class="tech-role">Proprietary USP</div></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-sec">
+  <p class="slbl reveal" style="text-align:center">Ready to cook smarter?</p>
+  <h2 class="stitle reveal" style="text-align:center;font-size:clamp(2.5rem,5vw,5rem)">Your fridge is<br/><em>waiting.</em></h2>
+  <div class="hero-cta" style="margin-top:40px"><a href="/app" class="btn-primary">🍳 Launch CookWise →</a></div>
+</section>
+
+<footer>
+  <div class="foot-logo">CookWise</div>
+  <p>© 2025 CookWise. Built with ❤️ and Gemini AI.</p>
+  <div class="foot-links">
+    <a href="/api/docs">API Docs</a>
+    <a href="#features">Features</a>
+    <a href="#tech">Tech</a>
+  </div>
+</footer>
+
+<script>
+// Scroll reveal
+const obs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{ if(e.isIntersecting) e.target.classList.add('visible'); });
+},{threshold:.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// Demo meters
+const demoObs = new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      setTimeout(()=>{
+        document.getElementById('m1').style.width='78%';
+        document.getElementById('m2').style.width='15%';
+        document.getElementById('m3').style.width='7%';
+      },200);
+      demoObs.disconnect();
+    }
+  });
+},{threshold:.5});
+const dc=document.querySelector('.demo-card');
+if(dc) demoObs.observe(dc);
+</script>
+</body>
+</html>
